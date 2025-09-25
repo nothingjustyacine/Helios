@@ -2,8 +2,7 @@ version: '3.8'
 
 services:
   helios:
-    build: .
-    container_name: helios-app
+    image: ghcr.io/moontechlab/helios:latest
     ports:
       - "8080:8080"
     environment:
@@ -12,8 +11,5 @@ services:
       - SUBSCRIPTION_URL=${SUBSCRIPTION_URL:-https://your_subscription_url.com}
     volumes:
       # 持久化数据库文件
-      - helios_data:/data
+      - ./data:/data
     restart: unless-stopped
-
-volumes:
-  helios_data:
