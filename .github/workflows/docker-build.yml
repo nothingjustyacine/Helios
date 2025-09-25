@@ -33,13 +33,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        include:
-          - platform: linux/amd64
-            arch: amd64
-          - platform: linux/arm64
-            arch: arm64
 
     steps:
     - name: 检出代码
@@ -73,21 +66,20 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
           type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
 
-    - name: 构建并推送 Docker 镜像 (${{ matrix.arch }})
-      if: matrix.arch == 'amd64' || (matrix.arch == 'arm64' && (github.event_name != 'workflow_dispatch' || github.event.inputs.build_arm64 == 'true'))
+    - name: 构建并推送多架构 Docker 镜像
       uses: docker/build-push-action@v5
       with:
         context: .
-        file: ${{ matrix.arch == 'arm64' && 'Dockerfile.arm64' || 'Dockerfile' }}
-        platforms: ${{ matrix.platform }}
+        file: Dockerfile
+        platforms: linux/amd64${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.build_arm64 == 'true') && ',linux/arm64' || '' }}
         push: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.push_to_registry == 'true' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha,scope=${{ matrix.arch }}
-        cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
+        cache-from: type=gha,scope=multi-arch
+        cache-to: type=gha,mode=max,scope=multi-arch
         build-args: |
-          BUILDPLATFORM=${{ matrix.platform }}
-          TARGETPLATFORM=${{ matrix.platform }}
+          BUILDPLATFORM=linux/amd64
+          TARGETPLATFORM=linux/amd64
         outputs: type=registry
         provenance: false
         sbom: false
@@ -98,7 +90,7 @@ jobs:
         echo "## 🐳 Docker 镜像构建完成" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**触发方式:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-        echo "**构建架构:** ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
+        echo "**构建架构:** multi-arch (amd64${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.build_arm64 == 'true') && ' + arm64' || '' }})" >> $GITHUB_STEP_SUMMARY
         if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           echo "**自定义标签:** ${{ github.event.inputs.tag }}" >> $GITHUB_STEP_SUMMARY
           echo "**推送到注册表:** ${{ github.event.inputs.push_to_registry }}" >> $GITHUB_STEP_SUMMARY
