@@ -17,6 +17,11 @@ on:
         required: true
         default: true
         type: boolean
+      build_arm64:
+        description: '构建 ARM64 架构 (较慢)'
+        required: true
+        default: false
+        type: boolean
 
 env:
   REGISTRY: ghcr.io
@@ -28,6 +33,13 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            arch: amd64
+          - platform: linux/arm64
+            arch: arm64
 
     steps:
     - name: 检出代码
@@ -35,6 +47,10 @@ jobs:
 
     - name: 设置 Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        driver-opts: |
+          image=moby/buildkit:buildx-stable-1
+          network=host
 
     - name: 登录到 GitHub Container Registry
       uses: docker/login-action@v3
@@ -57,16 +73,24 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
           type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
 
-    - name: 构建并推送 Docker 镜像
+    - name: 构建并推送 Docker 镜像 (${{ matrix.arch }})
+      if: matrix.arch == 'amd64' || (matrix.arch == 'arm64' && (github.event_name != 'workflow_dispatch' || github.event.inputs.build_arm64 == 'true'))
       uses: docker/build-push-action@v5
       with:
         context: .
-        platforms: linux/amd64,linux/arm64
+        file: ${{ matrix.arch == 'arm64' && 'Dockerfile.arm64' || 'Dockerfile' }}
+        platforms: ${{ matrix.platform }}
         push: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.push_to_registry == 'true' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: type=gha,scope=${{ matrix.arch }}
+        cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
+        build-args: |
+          BUILDPLATFORM=${{ matrix.platform }}
+          TARGETPLATFORM=${{ matrix.platform }}
+        outputs: type=registry
+        provenance: false
+        sbom: false
 
     - name: 生成摘要
       if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -74,9 +98,11 @@ jobs:
         echo "## 🐳 Docker 镜像构建完成" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**触发方式:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "**构建架构:** ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
         if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           echo "**自定义标签:** ${{ github.event.inputs.tag }}" >> $GITHUB_STEP_SUMMARY
           echo "**推送到注册表:** ${{ github.event.inputs.push_to_registry }}" >> $GITHUB_STEP_SUMMARY
+          echo "**构建 ARM64:** ${{ github.event.inputs.build_arm64 }}" >> $GITHUB_STEP_SUMMARY
         fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**镜像标签:**" >> $GITHUB_STEP_SUMMARY
