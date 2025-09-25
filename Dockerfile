@@ -39,8 +39,8 @@ COPY --from=builder /app/main .
 RUN mkdir -p /data && \
     chown -R appuser:appgroup /app /data
 
-# 切换到非 root 用户
-USER appuser
+# 注释掉非 root 用户，使用 root 运行
+# USER appuser
 
 # 暴露端口
 EXPOSE 8080
