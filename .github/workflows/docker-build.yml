@@ -6,6 +6,17 @@ on:
     tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '自定义标签 (可选)'
+        required: false
+        default: 'manual'
+      push_to_registry:
+        description: '推送到注册表'
+        required: true
+        default: true
+        type: boolean
 
 env:
   REGISTRY: ghcr.io
@@ -44,22 +55,29 @@ jobs:
           type=semver,pattern={{major}}.{{minor}}
           type=semver,pattern={{major}}
           type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
 
     - name: 构建并推送 Docker 镜像
       uses: docker/build-push-action@v5
       with:
         context: .
         platforms: linux/amd64,linux/arm64
-        push: true
+        push: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.push_to_registry == 'true' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
     - name: 生成摘要
-      if: github.event_name == 'push'
+      if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
       run: |
         echo "## 🐳 Docker 镜像构建完成" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**触发方式:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "**自定义标签:** ${{ github.event.inputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**推送到注册表:** ${{ github.event.inputs.push_to_registry }}" >> $GITHUB_STEP_SUMMARY
+        fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**镜像标签:**" >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
@@ -69,4 +87,7 @@ jobs:
         echo "**拉取命令:**" >> $GITHUB_STEP_SUMMARY
         echo '```bash' >> $GITHUB_STEP_SUMMARY
         echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.tag }}" != "" ]; then
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.tag }}" >> $GITHUB_STEP_SUMMARY
+        fi
         echo '```' >> $GITHUB_STEP_SUMMARY
