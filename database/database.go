@@ -250,6 +250,13 @@ func DeletePlayRecord(source, sourceID string) error {
 	return err
 }
 
+// DeleteAllPlayRecords 删除所有播放记录
+func DeleteAllPlayRecords() error {
+	query := "DELETE FROM play_records"
+	_, err := DB.Exec(query)
+	return err
+}
+
 // GetAllFavorites 获取所有收藏夹记录
 func GetAllFavorites() (map[string]models.Favorite, error) {
 	query := `
@@ -529,4 +536,14 @@ func DeleteSearchHistoryKeyword(keyword string) error {
 	}
 
 	return nil
+}
+
+// ClearSearchHistory 清空搜索历史，将 id=1 的记录设置为空数组
+func ClearSearchHistory() error {
+	query := `
+		INSERT INTO search_history (id, record) VALUES (1, '[]')
+		ON CONFLICT(id) DO UPDATE SET record = '[]'`
+
+	_, err := DB.Exec(query)
+	return err
 }

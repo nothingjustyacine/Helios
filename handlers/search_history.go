@@ -70,8 +70,21 @@ func handlePostSearchHistory(w http.ResponseWriter, r *http.Request) {
 
 func handleDeleteSearchHistory(w http.ResponseWriter, r *http.Request) {
 	keyword := r.URL.Query().Get("keyword")
+
+	// 如果 keyword 为空，清空所有搜索历史
 	if keyword == "" {
-		http.Error(w, "keyword parameter is required", http.StatusBadRequest)
+		err := database.ClearSearchHistory()
+		if err != nil {
+			http.Error(w, "Failed to clear search history", http.StatusInternalServerError)
+			return
+		}
+
+		response := map[string]interface{}{
+			"success": true,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		sonic.ConfigDefault.NewEncoder(w).Encode(response)
 		return
 	}
 

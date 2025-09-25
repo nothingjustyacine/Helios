@@ -80,8 +80,21 @@ func handlePostPlayRecords(w http.ResponseWriter, r *http.Request) {
 
 func handleDeletePlayRecords(w http.ResponseWriter, r *http.Request) {
 	key := r.URL.Query().Get("key")
+
+	// 如果 key 为空，删除全部播放记录
 	if key == "" {
-		http.Error(w, "key parameter is required", http.StatusBadRequest)
+		err := database.DeleteAllPlayRecords()
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to delete all play records: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		response := map[string]interface{}{
+			"success": true,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		sonic.ConfigDefault.NewEncoder(w).Encode(response)
 		return
 	}
 
