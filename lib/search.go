@@ -30,6 +30,19 @@ type ApiSearchItem struct {
 	TypeName    *string `json:"type_name,omitempty"`
 }
 
+type ApiSearchItem2 struct {
+	VodID       string  `json:"vod_id"`
+	VodName     string  `json:"vod_name"`
+	VodPic      string  `json:"vod_pic"`
+	VodRemarks  *string `json:"vod_remarks,omitempty"`
+	VodPlayURL  *string `json:"vod_play_url,omitempty"`
+	VodClass    *string `json:"vod_class,omitempty"`
+	VodYear     *string `json:"vod_year,omitempty"`
+	VodContent  *string `json:"vod_content,omitempty"`
+	VodDoubanID *int    `json:"vod_douban_id,omitempty"`
+	TypeName    *string `json:"type_name,omitempty"`
+}
+
 // models.SearchResult 搜索结果数据结构
 
 // CachedSearchPage 缓存的搜索页面数据
@@ -38,6 +51,7 @@ type CachedSearchPage struct {
 	Data      []models.SearchResult `json:"data"`
 	PageCount *int                  `json:"page_count,omitempty"`
 	Timestamp time.Time             `json:"timestamp"`
+	ExpiresAt time.Time             `json:"expires_at"` // 过期时间
 }
 
 // 全局变量
@@ -102,40 +116,76 @@ func SearchWithCache(apiSite models.APISite, query string, page int, url string,
 
 	if resp.StatusCode == 403 {
 		SetCachedSearchPage(apiSite.Key, query, page, "forbidden", []models.SearchResult{}, nil)
-		fmt.Println("搜索请求失败", resp.StatusCode)
+		// fmt.Println("搜索请求失败", resp.StatusCode)
 		return []models.SearchResult{}, nil, nil
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		fmt.Println("搜索请求失败", resp.StatusCode)
+		// fmt.Println("搜索请求失败", resp.StatusCode)
 		return []models.SearchResult{}, nil, fmt.Errorf("HTTP error: %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("搜索请求失败", err)
+		// fmt.Println("搜索请求失败", err)
 		return []models.SearchResult{}, nil, err
 	}
 
+	// 尝试第一种数据结构 (ApiSearchItem with int VodID)
 	var data struct {
 		List      []ApiSearchItem `json:"list"`
 		PageCount int             `json:"pagecount"`
 	}
 
-	if err := json.Unmarshal(body, &data); err != nil {
-		fmt.Println("搜索请求失败", err)
-		return []models.SearchResult{}, nil, err
+	var data2 struct {
+		List      []ApiSearchItem2 `json:"list"`
+		PageCount int              `json:"pagecount"`
 	}
 
-	if len(data.List) == 0 {
+	var items []ApiSearchItem
+	if err := json.Unmarshal(body, &data); err != nil {
+		// 如果第一种结构解析失败，尝试第二种结构 (ApiSearchItem2 with string VodID)
+		if err2 := json.Unmarshal(body, &data2); err2 != nil {
+			// fmt.Println("搜索请求失败，两种数据结构都解析失败", err, err2)
+			fmt.Println(string(body))
+			return []models.SearchResult{}, nil, err
+		}
+		// 将 ApiSearchItem2 转换为 ApiSearchItem
+		items = make([]ApiSearchItem, len(data2.List))
+		for i, item2 := range data2.List {
+			// 将 string 类型的 VodID 转换为 int
+			vodID, err := strconv.Atoi(item2.VodID)
+			if err != nil {
+				// 如果转换失败，跳过这个项目或使用默认值
+				// fmt.Printf("警告: 无法转换 VodID %s 为整数，跳过该项目\n", item2.VodID)
+				continue
+			}
+			items[i] = ApiSearchItem{
+				VodID:       vodID,
+				VodName:     item2.VodName,
+				VodPic:      item2.VodPic,
+				VodRemarks:  item2.VodRemarks,
+				VodPlayURL:  item2.VodPlayURL,
+				VodClass:    item2.VodClass,
+				VodYear:     item2.VodYear,
+				VodContent:  item2.VodContent,
+				VodDoubanID: item2.VodDoubanID,
+				TypeName:    item2.TypeName,
+			}
+		}
+	} else {
+		items = data.List
+	}
+
+	if len(items) == 0 {
 		// 空结果不做负缓存要求
-		fmt.Println("搜索请求失败", "空结果")
+		// fmt.Println("搜索请求失败", "空结果")
 		return []models.SearchResult{}, nil, nil
 	}
 
-	// 处理结果数据
+	// 统一处理结果数据
 	var allResults []models.SearchResult
-	for _, item := range data.List {
+	for _, item := range items {
 		var episodes []string
 		var titles []string
 
@@ -204,7 +254,7 @@ func SearchFromAPI(apiSite models.APISite, query string, maxPages int) ([]models
 	// 使用新的缓存搜索函数处理第一页
 	firstPageResults, pageCountFromFirst, err := SearchWithCache(apiSite, query, 1, apiURL, 8000)
 	if err != nil {
-		fmt.Println("搜索请求失败", err)
+		// fmt.Println("搜索请求失败", err)
 		return []models.SearchResult{}, err
 	}
 
@@ -343,7 +393,7 @@ func GetDetailFromAPI(apiSite models.APISite, id string) (*models.SearchResult, 
 
 	req, err := http.NewRequestWithContext(ctx, "GET", detailURL, nil)
 	if err != nil {
-		fmt.Println("详情请求失败", err)
+		// fmt.Println("详情请求失败", err)
 		return nil, err
 	}
 
@@ -563,7 +613,7 @@ func FetchVideoDetail(options FetchVideoDetailOptions) (*models.SearchResult, er
 	apiSites := config.GlobalConfig.APISites
 	apiSite, exists := apiSites[options.Source]
 	if !exists {
-		fmt.Println("无效的API来源", options.Source)
+		// fmt.Println("无效的API来源", options.Source)
 		return nil, fmt.Errorf("无效的API来源")
 	}
 
