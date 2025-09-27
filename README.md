@@ -4,7 +4,7 @@
   <img src="logo.png" alt="Helios Logo" width="120">
 </div>
 
-> 🎬 **Helios** 是 [Selene](https://github.com/MoonTechLab/Selene) 所需 API 的 golang 实现。
+> 🎬 **Helios** 是 [Selene](https://github.com/MoonTechLab/Selene) 所需 API 的 golang 实现。设计目标是单容器、单用户、最小化。
 
 <div align="center">
 
